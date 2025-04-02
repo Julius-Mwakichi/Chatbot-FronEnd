@@ -1,0 +1,135 @@
+import React, { useState, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+import { FaPaperPlane, FaPaperclip } from 'react-icons/fa';
+import '../index.css';
+
+function App() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const fileInputRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSend = () => {
+    if (input.trim() === '') return;
+    
+    const newMessage = {
+      text: input,
+      sender: 'user'
+    };
+    
+    // Use functional update to avoid race conditions
+    setMessages(prevMessages => [...prevMessages, newMessage]);
+    setInput('');
+    
+    setTimeout(() => {
+      const botResponse = {
+        text: `Processing: ${input} (Simulated)`,
+        sender: 'bot'
+      };
+      setMessages(prevMessages => [...prevMessages, botResponse]);
+    }, 1000);
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const fileMessage = {
+        text: `Uploaded: ${file.name}`,
+        sender: 'user',
+        file: file
+      };
+      
+      // Use functional update
+      setMessages(prevMessages => [...prevMessages, fileMessage]);
+      
+      setTimeout(() => {
+        const botResponse = {
+          text: `File ${file.name} received. Please provide further instructions.`,
+          sender: 'bot'
+        };
+        setMessages(prevMessages => [...prevMessages, botResponse]);
+      }, 1500);
+    }
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
+  };
+  
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-gray-100">
+      <div className="bg-blue-600 text-white text-center p-4 text-xl font-bold">
+        Legal Advisor Chatbot
+      </div>
+      
+      <div className="flex-1 p-4 overflow-y-auto">
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`p-2 my-2 max-w-md rounded-lg ${
+              msg.sender === 'user'
+                ? 'ml-auto bg-blue-500 text-white'
+                : 'mr-auto bg-gray-300 text-black'
+            }`}
+          >
+            {msg.text}
+            {msg.file && <p className="text-sm mt-1">File: {msg.file.name}</p>}
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+      
+      <div className="flex p-2 border-t bg-white">
+        <label className="cursor-pointer flex items-center">
+          <FaPaperclip className="text-gray-600 mx-2" size={24} />
+          <input
+            type="file"
+            className="hidden"
+            onChange={handleFileUpload}
+            ref={fileInputRef}
+          />
+        </label>
+        
+        <input
+          type="text"
+          className="flex-1 p-2 border rounded-lg"
+          placeholder="Type your message..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        
+        <button
+          className="bg-blue-500 text-white p-2 rounded-lg ml-2"
+          onClick={handleSend}
+        >
+          <FaPaperPlane size={20} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
