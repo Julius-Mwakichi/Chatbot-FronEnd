@@ -1,0 +1,70 @@
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+import { FaPaperPlane, FaPaperclip } from 'react-icons/fa';
+import '../index.css';
+
+function App() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+
+  const handleSend = () => {
+    if (input.trim() === '') return;
+    const newMessage = { text: input, sender: 'user' };
+    setMessages([...messages, newMessage]);
+    setInput('');
+    
+    // Simulating bot response (replace with actual AI response logic)
+    setTimeout(() => {
+      const botResponse = { text: `Processing: ${input}`, sender: 'bot' };
+      setMessages(prev => [...prev, botResponse]);
+    }, 1000);
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const fileMessage = { text: `Uploaded: ${file.name}`, sender: 'user' };
+      setMessages([...messages, fileMessage]);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-gray-100">
+      <div className="bg-blue-600 text-white text-center p-4 text-xl font-bold">
+        Legal Advisor Chatbot
+      </div>
+      <div className="flex-1 p-4 overflow-y-auto">
+        {messages.map((msg, index) => (
+          <div key={index} className={`p-2 my-2 max-w-xs ${msg.sender === 'user' ? 'ml-auto bg-blue-500 text-white' : 'mr-auto bg-gray-300 text-black'} rounded-lg`}>
+            {msg.text}
+          </div>
+        ))}
+      </div>
+      <div className="flex p-2 border-t bg-white">
+        <label className="cursor-pointer">
+          <FaPaperclip className="text-gray-600 mx-2" size={24} />
+          <input type="file" className="hidden" onChange={handleFileUpload} />
+        </label>
+        <input 
+          type="text" 
+          className="flex-1 p-2 border rounded-lg" 
+          placeholder="Type your message..." 
+          value={input} 
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+        />
+        <button className="bg-blue-500 text-white p-2 rounded-lg ml-2" onClick={handleSend}>
+          <FaPaperPlane size={20} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
